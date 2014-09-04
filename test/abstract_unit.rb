@@ -1,9 +1,19 @@
-require 'rubygems'
-require 'bundler/setup'
-require 'minitest/autorun'
+lib = File.expand_path("#{File.dirname(__FILE__)}/../lib")
+$:.unshift(lib) unless $:.include?('lib') || $:.include?(lib)
 
+$:.unshift(File.dirname(__FILE__) + '/lib')
+
+if defined? Gem
+  Gem.source_index
+  gem 'bundler'
+else
+  require 'rubygems'
+end
+require 'bundler'
+Bundler.setup
+
+require 'test/unit'
 require 'active_support'
-require 'active_support/test_case'
 require 'action_controller'
 require 'action_view'
 require 'action_view/testing/resolvers'
@@ -11,7 +21,7 @@ require 'action_view/testing/resolvers'
 require 'prototype-rails/on_load_action_controller'
 require 'prototype-rails/on_load_action_view'
 
-FIXTURE_LOAD_PATH = File.expand_path('../../fixtures', __FILE__)
+FIXTURE_LOAD_PATH = File.join(File.dirname(__FILE__), 'fixtures')
 FIXTURES = Pathname.new(FIXTURE_LOAD_PATH)
 
 
@@ -49,11 +59,11 @@ module ActiveSupport
     # have been loaded.
     setup_once do
       SharedTestRoutes.draw do
-        get ':controller(/:action)'
+        match ':controller(/:action)'
       end
 
       ActionDispatch::IntegrationTest.app.routes.draw do
-        get ':controller(/:action)'
+        match ':controller(/:action)'
       end
     end
   end
@@ -78,7 +88,7 @@ class BasicController
   def config
     @config ||= ActiveSupport::InheritableOptions.new(ActionController::Base.config).tap do |config|
       # VIEW TODO: View tests should not require a controller
-      public_dir = "#{FIXTURE_LOAD_PATH}/public"
+      public_dir = File.expand_path("../fixtures/public", __FILE__)
       config.assets_dir = public_dir
       config.javascripts_dir = "#{public_dir}/javascripts"
       config.stylesheets_dir = "#{public_dir}/stylesheets"
@@ -99,7 +109,7 @@ class ActionDispatch::IntegrationTest < ActiveSupport::TestCase
       middleware.use "ActionDispatch::ParamsParser"
       middleware.use "ActionDispatch::Cookies"
       middleware.use "ActionDispatch::Flash"
-      middleware.use "Rack::Head"
+      middleware.use "ActionDispatch::Head"
       yield(middleware) if block_given?
     end
   end

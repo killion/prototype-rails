@@ -3698,7 +3698,7 @@ Element.addMethods({
       return $(document.body);
 
     var isInline = (Element.getStyle(element, 'display') === 'inline');
-    if (!isInline && element.offsetParent && Element.visible(element)) return $(element.offsetParent);
+    if (!isInline && element.offsetParent) return $(element.offsetParent);
 
     while ((element = element.parentNode) && element !== document.body) {
       if (Element.getStyle(element, 'position') !== 'static') {
